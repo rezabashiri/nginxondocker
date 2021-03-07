@@ -1,0 +1,53 @@
+version: "3.7"
+
+services:
+
+  web:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - /var/www/:/var/www/
+      - ./conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - php
+    restart: unless-stopped
+
+  php:
+    build: .
+    volumes:
+      - /var/www/:/var/www/
+      - ./php.ini:/usr/local/etc/php/php.ini
+    links:
+      - mysql
+
+  mysql:
+    image: mysql:latest
+    ports:
+     - "3306:3306"
+    environment: 
+     - MYSQL_ROOT_PASSWORD=xxxx
+     - MYSQL_USER=yyyy
+     - MYSQL_PASSWORD=zzzz
+    volumes:
+     - mysqldata:/var/lib/mysql
+     - ./mysql.cnf:/etc/mysql/conf.d/docker.cnf
+    restart: unless-stopped
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - mysql:db
+    ports:
+     - "8082:80"
+    volumes:
+     - ./phpmyadmin.inc.php:/etc/phpmyadmin/config.inc.php
+    
+    environment:
+     - PMA_USER=root
+     - PMA_PASSWORD=tttt
+     - PHP_UPLOAD_MAX_FILESIZE=100MB
+     - MYSQL_ROOT_PASSWORD=zzzz
+    restart: unless-stopped
+
+volumes:
+ mysqldata:
